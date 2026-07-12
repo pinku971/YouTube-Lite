@@ -1,0 +1,40 @@
+workflows:
+  android-kotlin-workflow:
+    name: Android Kotlin ZIP Workflow
+    max_build_duration: 60
+    instance_type: mac_mini_m1
+    environment:
+      groups:
+        - android-signing
+      vars:
+        PACKAGE_NAME: "com.example.youtubelite"
+      node: latest
+    triggering:
+      events:
+        - push
+        - tag
+      branch_patterns:
+        - pattern: 'main'
+          include: true
+    scripts:
+      - name: Unzip Project Files
+        script: |
+          echo "Unzipping project files..."
+          unzip -o youtube-lite.zip
+          
+          # Agar zip ke andar ek aur folder nikle, toh uske andar move karne ke liye:
+          if [ -d "youtube-lite" ]; then
+            mv youtube-lite/* .
+            mv youtube-lite/.* . 2>/dev/null || true
+            rm -rf youtube-lite
+          fi
+          
+          ls -la
+      - name: Set up local.properties
+        script: |
+          echo "sdk.dir=$ANDROID_SDK_ROOT" > local.properties
+      - name: Build Android APK
+        script: |
+          ./gradlew assembleDebug
+    artifacts:
+      - app/build/outputs/apk/**/*.apk
