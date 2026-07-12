@@ -22,7 +22,6 @@ workflows:
           echo "Unzipping project files..."
           unzip -o youtube-lite.zip
           
-          # Agar zip ke andar ek aur folder nikle, toh uske andar move karne ke liye:
           if [ -d "youtube-lite" ]; then
             mv youtube-lite/* .
             mv youtube-lite/.* . 2>/dev/null || true
@@ -35,6 +34,9 @@ workflows:
           echo "sdk.dir=$ANDROID_SDK_ROOT" > local.properties
       - name: Build Android APK
         script: |
+          echo "Generating missing gradle wrapper..."
+          gradle wrapper
+          chmod +x gradlew
           ./gradlew assembleDebug
     artifacts:
       - app/build/outputs/apk/**/*.apk
